@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:8080
 @documentId = 123
-@storageRef = input/invoice.pdf
+@storageRef = invoice.pdf
 
 ### Health check applicativo implicito: endpoint non previsto dal progetto
 # Atteso: 404 Not Found, perche non abbiamo aggiunto Spring Actuator.
@@ -9,8 +9,8 @@ GET {{baseUrl}}/actuator/health
 ### Process document - happy path invoice
 # Prerequisito:
 # - avviare l'app con `mvn spring-boot:run`
-# - creare un file locale leggibile in `input/invoice.pdf`
-#   esempio: `mkdir -p input && cp /path/to/file.pdf input/invoice.pdf`
+# - creare un file locale leggibile in `data/input/invoice.pdf`
+#   esempio: `cp /path/to/file.pdf data/input/invoice.pdf`
 POST {{baseUrl}}/api/documents/process
 Content-Type: application/json
 
@@ -24,13 +24,13 @@ Content-Type: application/json
 }
 
 ### Process document - happy path credit note
-# Prerequisito: deve esistere `input/credit-note.pdf`.
+# Prerequisito: deve esistere `data/input/credit-note.pdf`.
 POST {{baseUrl}}/api/documents/process
 Content-Type: application/json
 
 {
   "documentId": "credit-note-001",
-  "storageRef": "input/credit-note.pdf",
+  "storageRef": "credit-note.pdf",
   "metadata": {
     "type": "credit_note",
     "receivedAt": "2026-05-01T10:00:00Z"
@@ -38,13 +38,13 @@ Content-Type: application/json
 }
 
 ### Process document - metadata receivedAt opzionale
-# Prerequisito: deve esistere `input/invoice.pdf`.
+# Prerequisito: deve esistere `data/input/invoice.pdf`.
 POST {{baseUrl}}/api/documents/process
 Content-Type: application/json
 
 {
   "documentId": "without-received-at",
-  "storageRef": "input/invoice.pdf",
+  "storageRef": "invoice.pdf",
   "metadata": {
     "type": "invoice"
   }
@@ -56,7 +56,7 @@ POST {{baseUrl}}/api/documents/process
 Content-Type: application/json
 
 {
-  "storageRef": "input/invoice.pdf",
+  "storageRef": "invoice.pdf",
   "metadata": {
     "type": "invoice",
     "receivedAt": "2026-05-01T10:00:00Z"
@@ -70,7 +70,7 @@ Content-Type: application/json
 
 {
   "documentId": "",
-  "storageRef": "input/invoice.pdf",
+  "storageRef": "invoice.pdf",
   "metadata": {
     "type": "invoice",
     "receivedAt": "2026-05-01T10:00:00Z"
@@ -84,7 +84,7 @@ Content-Type: application/json
 
 {
   "documentId": "../123",
-  "storageRef": "input/invoice.pdf",
+  "storageRef": "invoice.pdf",
   "metadata": {
     "type": "invoice",
     "receivedAt": "2026-05-01T10:00:00Z"
@@ -153,7 +153,7 @@ Content-Type: application/json
 
 {
   "documentId": "missing-metadata",
-  "storageRef": "input/invoice.pdf"
+  "storageRef": "invoice.pdf"
 }
 
 ### Bad request - metadata vuota
@@ -163,7 +163,7 @@ Content-Type: application/json
 
 {
   "documentId": "empty-metadata",
-  "storageRef": "input/invoice.pdf",
+  "storageRef": "invoice.pdf",
   "metadata": {}
 }
 
@@ -174,7 +174,7 @@ Content-Type: application/json
 
 {
   "documentId": "missing-type",
-  "storageRef": "input/invoice.pdf",
+  "storageRef": "invoice.pdf",
   "metadata": {
     "receivedAt": "2026-05-01T10:00:00Z"
   }
@@ -187,7 +187,7 @@ Content-Type: application/json
 
 {
   "documentId": "unsupported-type",
-  "storageRef": "input/invoice.pdf",
+  "storageRef": "invoice.pdf",
   "metadata": {
     "type": "receipt",
     "receivedAt": "2026-05-01T10:00:00Z"
@@ -201,7 +201,7 @@ Content-Type: application/json
 
 {
   "documentId": "invalid-received-at",
-  "storageRef": "input/invoice.pdf",
+  "storageRef": "invoice.pdf",
   "metadata": {
     "type": "invoice",
     "receivedAt": "not-a-date"
@@ -215,7 +215,7 @@ Content-Type: application/json
 
 {
   "documentId": "malformed-json",
-  "storageRef": "input/invoice.pdf",
+  "storageRef": "invoice.pdf",
   "metadata": {
     "type": "invoice"
   }
@@ -227,7 +227,7 @@ Content-Type: application/json
 
 {
   "documentId": "missing-file",
-  "storageRef": "input/missing.pdf",
+  "storageRef": "missing.pdf",
   "metadata": {
     "type": "invoice",
     "receivedAt": "2026-05-01T10:00:00Z"
