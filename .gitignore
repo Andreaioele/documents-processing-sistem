@@ -1,7 +1,5 @@
 target/
-output/
-input/
 logs/
-data/
 *.log
 .DS_Store
+data/output/
