@@ -1,0 +1,8 @@
+app:
+  storage:
+    input-root: data/input
+    output-root: data/output
+
+spring:
+  application:
+    name: document-processing-system

@@ -1,0 +1,239 @@
+@baseUrl = http://localhost:8080
+@documentId = 123
+@storageRef = input/invoice.pdf
+
+### Health check applicativo implicito: endpoint non previsto dal progetto
+# Atteso: 404 Not Found, perche non abbiamo aggiunto Spring Actuator.
+GET {{baseUrl}}/actuator/health
+
+### Process document - happy path invoice
+# Prerequisito:
+# - avviare l'app con `mvn spring-boot:run`
+# - creare un file locale leggibile in `input/invoice.pdf`
+#   esempio: `mkdir -p input && cp /path/to/file.pdf input/invoice.pdf`
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "{{documentId}}",
+  "storageRef": "{{storageRef}}",
+  "metadata": {
+    "type": "invoice",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Process document - happy path credit note
+# Prerequisito: deve esistere `input/credit-note.pdf`.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "credit-note-001",
+  "storageRef": "input/credit-note.pdf",
+  "metadata": {
+    "type": "credit_note",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Process document - metadata receivedAt opzionale
+# Prerequisito: deve esistere `input/invoice.pdf`.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "without-received-at",
+  "storageRef": "input/invoice.pdf",
+  "metadata": {
+    "type": "invoice"
+  }
+}
+
+### Bad request - documentId mancante
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "storageRef": "input/invoice.pdf",
+  "metadata": {
+    "type": "invoice",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Bad request - documentId vuoto
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "",
+  "storageRef": "input/invoice.pdf",
+  "metadata": {
+    "type": "invoice",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Bad request - documentId non sicuro
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "../123",
+  "storageRef": "input/invoice.pdf",
+  "metadata": {
+    "type": "invoice",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Bad request - storageRef mancante
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "missing-storage-ref",
+  "metadata": {
+    "type": "invoice",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Bad request - storageRef vuoto
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "blank-storage-ref",
+  "storageRef": "",
+  "metadata": {
+    "type": "invoice",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Bad request - storageRef assoluto non ammesso
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "absolute-path",
+  "storageRef": "/tmp/invoice.pdf",
+  "metadata": {
+    "type": "invoice",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Bad request - path traversal su storageRef
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "path-traversal",
+  "storageRef": "../secret.pdf",
+  "metadata": {
+    "type": "invoice",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Bad request - metadata mancante
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "missing-metadata",
+  "storageRef": "input/invoice.pdf"
+}
+
+### Bad request - metadata vuota
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "empty-metadata",
+  "storageRef": "input/invoice.pdf",
+  "metadata": {}
+}
+
+### Bad request - metadata.type mancante
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "missing-type",
+  "storageRef": "input/invoice.pdf",
+  "metadata": {
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Bad request - metadata.type non supportato
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "unsupported-type",
+  "storageRef": "input/invoice.pdf",
+  "metadata": {
+    "type": "receipt",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Bad request - metadata.receivedAt invalido
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "invalid-received-at",
+  "storageRef": "input/invoice.pdf",
+  "metadata": {
+    "type": "invoice",
+    "receivedAt": "not-a-date"
+  }
+}
+
+### Bad request - JSON malformato
+# Atteso: 400 Bad Request.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "malformed-json",
+  "storageRef": "input/invoice.pdf",
+  "metadata": {
+    "type": "invoice"
+  }
+
+### Not found - file non esistente
+# Atteso: 404 Not Found.
+POST {{baseUrl}}/api/documents/process
+Content-Type: application/json
+
+{
+  "documentId": "missing-file",
+  "storageRef": "input/missing.pdf",
+  "metadata": {
+    "type": "invoice",
+    "receivedAt": "2026-05-01T10:00:00Z"
+  }
+}
+
+### Method not allowed - endpoint corretto ma metodo errato
+# Atteso: 405 Method Not Allowed.
+GET {{baseUrl}}/api/documents/process
