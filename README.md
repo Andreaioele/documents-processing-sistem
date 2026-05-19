@@ -18,8 +18,8 @@ Default storage configuration:
 ```yaml
 app:
   storage:
-    input-root: .
-    output-root: output
+    input-root: data/input
+    output-root: data/output
 ```
 
 Override it when needed:
@@ -36,30 +36,32 @@ POST /api/documents/process
 Content-Type: application/json
 ```
 
-Example:
+You can test the API using `curl`:
 
-```json
-{
-  "documentId": "123",
-  "storageRef": "input/invoice.pdf",
-  "metadata": {
-    "type": "invoice",
-    "receivedAt": "2026-05-01T10:00:00Z"
-  }
-}
+```bash
+curl -X POST http://localhost:8080/api/documents/process \
+  -H "Content-Type: application/json" \
+  -d '{
+    "documentId": "FATTURA-123",
+    "storageRef": "invoice.pdf",
+    "metadata": {
+      "type": "invoice",
+      "receivedAt": "2026-05-01T10:00:00Z"
+    }
+  }'
 ```
 
 Successful response:
 
 ```json
 {
-  "documentId": "123",
-  "zipPath": "output/123.zip",
+  "documentId": "FATTURA-123",
+  "zipPath": "data/output/FATTURA-123.zip",
   "metadata": {
     "type": "invoice",
-    "processedAt": "2026-05-06T12:30:00Z",
-    "hash": "abc123...",
-    "sizeBytes": 20480
+    "processedAt": "2026-05-19T10:16:49.658473Z",
+    "hash": "6ab14b05c2fc9b621fe1cbcd231ef819fea0b1d8f67093f1bb6f816a3b75840e",
+    "sizeBytes": 24
   }
 }
 ```
